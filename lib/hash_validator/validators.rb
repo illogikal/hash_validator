@@ -1,21 +1,24 @@
 module HashValidator
-  @@validators = []
-
+  def self.validators
+    @validators = [] unless @validators
+    @validators
+  end
 
   def self.append_validator(validator)
     unless validator.is_a?(HashValidator::Validator::Base)
       raise StandardError.new('validators need to inherit from HashValidator::Validator::Base')
     end
 
-    if @@validators.detect { |v| v.name == validator.name }
-      raise StandardError.new('validators need to have unique names')
+    if validators.detect { |v| v.name == validator.name }
+      noop = (RUBY_ENGINE == 'opal' && validator.name == :string) #symbol is string on opal
+      raise StandardError.new('validators need to have unique names') unless noop
+    else
+      validators.push validator
     end
-
-    @@validators << validator
   end
 
   def self.validator_for(rhs)
-    @@validators.detect { |v| v.should_validate?(rhs) } || raise(StandardError.new("Could not find valid validator for: #{rhs}"))
+    @validators.detect { |v| v.should_validate?(rhs) } || raise(StandardError.new("Could not find valid validator for: #{rhs}"))
   end
 
   module Validator

@@ -7,6 +7,11 @@ class HashValidator::Validator::HashValidator < HashValidator::Validator::Base
     rhs.is_a?(Hash)
   end
 
+  def self.validators
+    ::HashValidator.validators
+  end
+
+
   def validate(key, value, validations, errors)
     # Validate hash
     unless value.is_a?(Hash)
@@ -18,10 +23,10 @@ class HashValidator::Validator::HashValidator < HashValidator::Validator::Base
     errors = (errors[key] = {})
 
     validations.each do |v_key, v_value|
-      HashValidator.validator_for(v_value).validate(v_key, value[v_key], v_value, errors)
+      ::HashValidator.validator_for(v_value).validate(v_key, value[v_key], v_value, errors)
     end
-    
-    if HashValidator::Base.strict?
+
+    if ::HashValidator::Base.strict?
       value.keys.each do |k|
         errors[k] = 'key not expected' unless validations[k]
       end
